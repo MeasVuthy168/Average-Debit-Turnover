@@ -1,0 +1,23 @@
+[
+  {
+    "MONTH": "31-03-25",
+    "AMT_IN": 7511300.00,
+    "CURRENT_OD": -40642000.00,
+    "TURNOVER_RATE": 18.60,
+    "Effective_Date": "10-01-25"
+  },
+  {
+    "MONTH": "28-02-25",
+    "AMT_IN": 15595804.62,
+    "CURRENT_OD": -33482400.00,
+    "TURNOVER_RATE": 47.00,
+    "Effective_Date": "10-01-25"
+  },
+  {
+    "MONTH": "31-01-25",
+    "AMT_IN": 4474739.82,
+    "CURRENT_OD": -40434800.00,
+    "TURNOVER_RATE": 11.10,
+    "Effective_Date": "10-01-25"
+  }
+]
