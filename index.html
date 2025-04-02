@@ -179,26 +179,15 @@
     }
 
     async function fetchAndFillData(cif) {
-      let totalAmtIn = 0, totalOd = 0;
-      let totalRate = 0, count = 0;
+      let totalAmtIn = 0, totalOd = 0, totalRate = 0, count = 0;
       const tbody = document.getElementById('data-body');
 
-      // Get all rows with latest effective date for this CIF
-      const validRows = [];
-      let latestEffective = null;
-      for (const d of combinedData) {
-        if (d.CUSTOMER === cif && d.Effective_Date) {
-          const dateParts = d.Effective_Date.split('-');
-          const formatted = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
-          if (!latestEffective || formatted > latestEffective) {
-            latestEffective = formatted;
-          }
-        }
-      }
-
-      const latestEffectiveStr = latestEffective
-        ? `${String(latestEffective.getDate()).padStart(2, '0')}-${String(latestEffective.getMonth() + 1).padStart(2, '0')}-${String(latestEffective.getFullYear()).toString().slice(-2)}`
-        : null;
+      // Determine the latest effective date for this CIF
+      const effectiveDates = combinedData
+        .filter(d => d.CUSTOMER === cif && d.Effective_Date)
+        .map(d => new Date(d.Effective_Date.split('-').reverse().join('-')));
+      const latestDate = effectiveDates.length ? new Date(Math.max(...effectiveDates)) : null;
+      const latestEff = latestDate ? `${String(latestDate.getDate()).padStart(2, '0')}-${String(latestDate.getMonth() + 1).padStart(2, '0')}-${String(latestDate.getFullYear()).toString().slice(-2)}` : null;
 
       [...tbody.rows].forEach(row => {
         const month = formatDate(row.cells[0].innerText);
@@ -212,7 +201,7 @@
           totalAmtIn += parseFloat(match.AMT_IN);
           totalOd += parseFloat(match.CURRENT_OD);
 
-          if (match.Effective_Date === latestEffectiveStr) {
+          if (formatDate(match.Effective_Date) === formatDate(latestEff)) {
             totalRate += parseFloat(match.TURNOVER_RATE);
             count++;
           }
