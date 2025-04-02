@@ -99,6 +99,8 @@
   </table>
 
   <script>
+    let monthList = [];
+
     function getLast12MonthEnds(baseDate) {
       const months = [];
       const date = new Date(baseDate);
@@ -107,47 +109,71 @@
         date.setMonth(date.getMonth() - 1);
         const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
         const formatted = endOfMonth.toLocaleDateString('en-GB').split('/').join('-').replace(/\d{4}/, y => y.slice(2));
-        months.push({
-          MONTH: formatted,
-          AMT_IN: '',
-          CURRENT_OD: '',
-          TURNOVER_RATE: '',
-          Effective_Date: ''
-        });
+        months.push(formatted);
       }
       return months;
     }
 
-    function clearData() {
-      document.getElementById('input-cif').value = '';
-      document.getElementById('customer-name').value = '';
-      document.getElementById('avg-amt-in').innerText = '';
-      document.getElementById('avg-current-od').innerText = '';
-      document.getElementById('avg-turnover-rate').innerText = '';
-    }
-
-    function updateTableWithEmptyMonths(baseDate) {
+    function updateTableWithEmptyMonths(months) {
       const tbody = document.getElementById('data-body');
       tbody.innerHTML = '';
-      const months = getLast12MonthEnds(baseDate);
-      months.forEach(entry => {
+      months.forEach(month => {
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td>${entry.MONTH}</td>
-          <td>${entry.AMT_IN}</td>
-          <td>${entry.CURRENT_OD}</td>
-          <td>${entry.TURNOVER_RATE}</td>
-          <td>${entry.Effective_Date}</td>
+          <td>${month}</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
         `;
         tbody.appendChild(row);
       });
-      clearData();
+    }
+
+    async function fetchAndFillData(cif) {
+      const datasets = ['data1.json', 'data2.json'];
+      const tbody = document.getElementById('data-body');
+      let totalAmtIn = 0, totalOd = 0, totalRate = 0, count = 0;
+
+      const allData = [];
+      for (const file of datasets) {
+        try {
+          const res = await fetch(file);
+          const data = await res.json();
+          allData.push(...data);
+        } catch (err) {
+          console.error(`Error loading ${file}:`, err);
+        }
+      }
+
+      [...tbody.rows].forEach(row => {
+        const month = row.cells[0].innerText;
+        const match = allData.find(d => d.CUSTOMER === cif && d.MONTH === month);
+        if (match) {
+          row.cells[1].innerText = parseFloat(match.AMT_IN).toLocaleString();
+          row.cells[2].innerText = parseFloat(match.CURRENT_OD).toLocaleString();
+          row.cells[3].innerText = match.TURNOVER_RATE + '%';
+          row.cells[4].innerText = match.Effective_Date;
+
+          totalAmtIn += parseFloat(match.AMT_IN);
+          totalOd += parseFloat(match.CURRENT_OD);
+          totalRate += parseFloat(match.TURNOVER_RATE);
+          count++;
+        }
+      });
+
+      document.getElementById('avg-amt-in').innerText = count ? totalAmtIn.toLocaleString(undefined, {maximumFractionDigits: 2}) : '';
+      document.getElementById('avg-current-od').innerText = count ? totalOd.toLocaleString(undefined, {maximumFractionDigits: 2}) : '';
+      document.getElementById('avg-turnover-rate').innerText = count ? (totalRate / count).toFixed(2) + '%' : '';
     }
 
     document.getElementById('prepared-date').addEventListener('change', (e) => {
       const selectedDate = e.target.value;
       if (selectedDate) {
-        updateTableWithEmptyMonths(selectedDate);
+        monthList = getLast12MonthEnds(selectedDate);
+        updateTableWithEmptyMonths(monthList);
+        document.getElementById('input-cif').value = '';
+        document.getElementById('customer-name').value = '';
       }
     });
 
@@ -172,6 +198,9 @@
       }
 
       document.getElementById('customer-name').value = customerName || 'Not Found';
+
+      // Now fetch and fill data into table
+      await fetchAndFillData(cif);
     });
   </script>
 </body>
