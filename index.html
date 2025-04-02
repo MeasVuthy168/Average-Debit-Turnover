@@ -95,7 +95,7 @@
 
   <div class="actions">
     <button onclick="window.print()">Print</button>
-    <button onclick="exportPDF()">Export PDF</button>
+    <button onclick="exportPDF()">Share</button>
   </div>
 
   <table id="turnover-table">
@@ -184,13 +184,14 @@
       let totalAmtIn = 0, totalOd = 0, totalRate = 0, count = 0;
       const tbody = document.getElementById('data-body');
 
-      // Find latest Effective Date
-      const dates = combinedData
-        .filter(d => d.CUSTOMER === cif)
-        .map(d => d.Effective_Date)
-        .map(d => new Date(d.split('-').reverse().join('-')));
-      const latestDate = new Date(Math.max.apply(null, dates));
-      const latestEff = `${String(latestDate.getDate()).padStart(2, '0')}-${String(latestDate.getMonth() + 1).padStart(2, '0')}-${String(latestDate.getFullYear()).slice(-2)}`;
+      const effDates = combinedData
+        .filter(d => d.CUSTOMER === cif && d.Effective_Date)
+        .map(d => new Date(d.Effective_Date.split('-').reverse().join('-')));
+
+      const latestDate = effDates.length ? new Date(Math.max(...effDates)) : null;
+      const latestEff = latestDate
+        ? `${String(latestDate.getDate()).padStart(2, '0')}-${String(latestDate.getMonth() + 1).padStart(2, '0')}-${String(latestDate.getFullYear()).toString().slice(-2)}`
+        : null;
 
       [...tbody.rows].forEach(row => {
         const month = formatDate(row.cells[0].innerText);
@@ -203,7 +204,7 @@
 
           totalAmtIn += parseFloat(match.AMT_IN);
           totalOd += parseFloat(match.CURRENT_OD);
-          if (match.Effective_Date === latestEff) {
+          if (latestEff && formatDate(match.Effective_Date) === formatDate(latestEff)) {
             totalRate += parseFloat(match.TURNOVER_RATE);
             count++;
           }
