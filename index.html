@@ -177,21 +177,29 @@
     }
 
     async function fetchAndFillData(cif) {
-      let totalAmtIn = 0, totalOd = 0, totalRate = 0, count = 0;
+      let totalAmtIn = 0, totalOd = 0;
+      let totalRate = 0, count = 0;
       const tbody = document.getElementById('data-body');
 
-      const effectiveDates = combinedData
-        .filter(d => d.CUSTOMER === cif && d.Effective_Date)
-        .map(d => new Date(d.Effective_Date.split('-').reverse().join('-')));
+      let latestEff = null;
+      combinedData.forEach(d => {
+        if (d.CUSTOMER === cif && d.Effective_Date) {
+          const dParts = d.Effective_Date.split('-');
+          const formatted = new Date(`${dParts[2].length === 2 ? '20' + dParts[2] : dParts[2]}-${dParts[1]}-${dParts[0]}`);
+          if (!latestEff || formatted > latestEff) {
+            latestEff = formatted;
+          }
+        }
+      });
 
-      const latestDate = effectiveDates.length ? new Date(Math.max(...effectiveDates)) : null;
-      const latestEff = latestDate
-        ? `${String(latestDate.getDate()).padStart(2, '0')}-${String(latestDate.getMonth() + 1).padStart(2, '0')}-${String(latestDate.getFullYear()).toString().slice(-2)}`
+      const latestEffStr = latestEff
+        ? `${String(latestEff.getDate()).padStart(2, '0')}-${String(latestEff.getMonth() + 1).padStart(2, '0')}-${String(latestEff.getFullYear()).slice(-2)}`
         : null;
 
       [...tbody.rows].forEach(row => {
         const month = formatDate(row.cells[0].innerText);
         const match = combinedData.find(d => d.CUSTOMER === cif && formatDate(d.MONTH) === month);
+
         if (match) {
           row.cells[1].innerText = parseFloat(match.AMT_IN).toLocaleString();
           row.cells[2].innerText = parseFloat(match.CURRENT_OD).toLocaleString();
@@ -201,14 +209,9 @@
           totalAmtIn += parseFloat(match.AMT_IN);
           totalOd += parseFloat(match.CURRENT_OD);
 
-          const matchEff = formatDate(match.Effective_Date);
-          const latestEffFormatted = formatDate(latestEff);
-          if (matchEff === latestEffFormatted) {
+          if (formatDate(match.Effective_Date) === latestEffStr) {
             totalRate += parseFloat(match.TURNOVER_RATE);
             count++;
-            console.log('Included in avg:', match.MONTH, match.TURNOVER_RATE);
-          } else {
-            console.log('Skipped from avg:', match.MONTH, 'Effective:', matchEff, 'Expected:', latestEffFormatted);
           }
         } else {
           row.classList.add("not-found");
@@ -218,7 +221,7 @@
 
       document.getElementById('avg-amt-in').innerText = totalAmtIn.toLocaleString(undefined, { maximumFractionDigits: 2 });
       document.getElementById('avg-current-od').innerText = totalOd.toLocaleString(undefined, { maximumFractionDigits: 2 });
-      document.getElementById('avg-turnover-rate').innerText = count ? (totalRate / count).toFixed(2) + '%' : '';
+      document.getElementById('avg-turnover-rate').innerText = count > 0 ? (totalRate / count).toFixed(2) + '%' : '';
     }
 
     document.getElementById('prepared-date').addEventListener('change', async (e) => {
@@ -235,12 +238,9 @@
     document.getElementById('input-cif').addEventListener('change', async (e) => {
       const cif = e.target.value.trim();
       if (!cif) return;
-
       if (!combinedData.length) await loadAllData();
-
       const found = combinedData.find(d => d.CUSTOMER === cif);
       document.getElementById('customer-name').value = found ? found["Name(Eng)"] : 'Not Found';
-
       await fetchAndFillData(cif);
     });
   </script>
