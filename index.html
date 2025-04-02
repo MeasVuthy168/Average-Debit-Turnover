@@ -107,9 +107,7 @@
         <th>Effective Date</th>
       </tr>
     </thead>
-    <tbody id="data-body">
-      <!-- Dynamic rows will be inserted here -->
-    </tbody>
+    <tbody id="data-body"></tbody>
     <tfoot>
       <tr>
         <td>Average</td>
@@ -182,12 +180,14 @@
       let totalAmtIn = 0, totalOd = 0, totalRate = 0, count = 0;
       const tbody = document.getElementById('data-body');
 
-      // Determine the latest effective date for this CIF
       const effectiveDates = combinedData
         .filter(d => d.CUSTOMER === cif && d.Effective_Date)
         .map(d => new Date(d.Effective_Date.split('-').reverse().join('-')));
+
       const latestDate = effectiveDates.length ? new Date(Math.max(...effectiveDates)) : null;
-      const latestEff = latestDate ? `${String(latestDate.getDate()).padStart(2, '0')}-${String(latestDate.getMonth() + 1).padStart(2, '0')}-${String(latestDate.getFullYear()).toString().slice(-2)}` : null;
+      const latestEff = latestDate
+        ? `${String(latestDate.getDate()).padStart(2, '0')}-${String(latestDate.getMonth() + 1).padStart(2, '0')}-${String(latestDate.getFullYear()).toString().slice(-2)}`
+        : null;
 
       [...tbody.rows].forEach(row => {
         const month = formatDate(row.cells[0].innerText);
@@ -201,9 +201,14 @@
           totalAmtIn += parseFloat(match.AMT_IN);
           totalOd += parseFloat(match.CURRENT_OD);
 
-          if (formatDate(match.Effective_Date) === formatDate(latestEff)) {
+          const matchEff = formatDate(match.Effective_Date);
+          const latestEffFormatted = formatDate(latestEff);
+          if (matchEff === latestEffFormatted) {
             totalRate += parseFloat(match.TURNOVER_RATE);
             count++;
+            console.log('Included in avg:', match.MONTH, match.TURNOVER_RATE);
+          } else {
+            console.log('Skipped from avg:', match.MONTH, 'Effective:', matchEff, 'Expected:', latestEffFormatted);
           }
         } else {
           row.classList.add("not-found");
