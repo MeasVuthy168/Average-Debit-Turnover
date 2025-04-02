@@ -12,23 +12,30 @@
     }
     h2 {
       text-align: center;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
     }
-    .info {
+    .form-section {
       display: flex;
-      justify-content: space-between;
-      max-width: 600px;
-      margin: 0 auto 20px;
-      padding: 10px;
-      background-color: #eaf4ea;
-      border-radius: 8px;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
     }
-    .info span {
+    .form-section div {
+      display: flex;
+      flex-direction: column;
+    }
+    .form-section label {
       font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .form-section input {
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
     table {
       width: 100%;
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
       border-collapse: collapse;
       background-color: white;
@@ -52,23 +59,31 @@
 </head>
 <body>
   <h2>YEARLY AVERAGE OF DEBIT TURNOVER</h2>
-  <div class="info">
+  <div class="form-section">
     <div>
-      <div>Prepared Date: <span class="highlight" id="prepared-date"></span></div>
-      <div>Input CIF: <span class="highlight" id="input-cif"></span></div>
+      <label for="prepared-date">Prepared Date</label>
+      <input type="date" id="prepared-date" />
     </div>
     <div>
-      Customer Name: <span class="highlight" id="customer-name"></span>
+      <label for="input-cif">Input CIF</label>
+      <input type="text" id="input-cif" />
+    </div>
+    <div>
+      <label for="customer-name">Customer Name</label>
+      <input type="text" id="customer-name" disabled />
     </div>
   </div>
+
   <table>
     <thead>
       <tr>
         <th>MONTH</th>
-        <th>AMT_IN</th>
+        <th>CUSTOMER</th>
+        <th>Name(Eng)</th>
         <th>CURRENT_OD</th>
-        <th>TURNOVER RATE</th>
-        <th>Effective Date</th>
+        <th>TURNOVER_RATE</th>
+        <th>AMT_IN</th>
+        <th>Effective_Date</th>
       </tr>
     </thead>
     <tbody id="data-body">
@@ -76,51 +91,94 @@
     </tbody>
     <tfoot>
       <tr>
-        <td>Average</td>
-        <td id="avg-amt-in"></td>
+        <td colspan="3">Average</td>
         <td id="avg-current-od"></td>
         <td id="avg-turnover-rate"></td>
+        <td id="avg-amt-in"></td>
         <td></td>
       </tr>
     </tfoot>
   </table>
 
   <script>
-    async function loadData() {
-      const response = await fetch('data.json');
-      const data = await response.json();
+    function getLast12MonthEnds(baseDate) {
+      const months = [];
+      const date = new Date(baseDate);
+      date.setDate(1);
+      for (let i = 0; i < 12; i++) {
+        date.setMonth(date.getMonth() - 1);
+        const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        const formatted = endOfMonth.toLocaleDateString('en-GB').split('/').join('-').replace(/\d{4}/, y => y.slice(2));
+        months.push({
+          MONTH: formatted,
+          CUSTOMER: '',
+          "Name(Eng)": '',
+          CURRENT_OD: '',
+          TURNOVER_RATE: '',
+          AMT_IN: '',
+          Effective_Date: ''
+        });
+      }
+      return months;
+    }
 
+    function clearData() {
+      document.getElementById('input-cif').value = '';
+      document.getElementById('customer-name').value = '';
+      document.getElementById('avg-amt-in').innerText = '';
+      document.getElementById('avg-current-od').innerText = '';
+      document.getElementById('avg-turnover-rate').innerText = '';
+    }
+
+    function updateTableWithEmptyMonths(baseDate) {
       const tbody = document.getElementById('data-body');
-      let totalAmtIn = 0, totalOd = 0, totalRate = 0, count = 0;
-
-      data.forEach(entry => {
+      tbody.innerHTML = '';
+      const months = getLast12MonthEnds(baseDate);
+      months.forEach(entry => {
         const row = document.createElement('tr');
         row.innerHTML = `
           <td>${entry.MONTH}</td>
-          <td>${Number(entry.AMT_IN).toLocaleString()}</td>
-          <td>${Number(entry.CURRENT_OD).toLocaleString()}</td>
-          <td>${entry.TURNOVER_RATE}%</td>
+          <td>${entry.CUSTOMER}</td>
+          <td>${entry["Name(Eng)"]}</td>
+          <td>${entry.CURRENT_OD}</td>
+          <td>${entry.TURNOVER_RATE}</td>
+          <td>${entry.AMT_IN}</td>
           <td>${entry.Effective_Date}</td>
         `;
         tbody.appendChild(row);
-
-        totalAmtIn += parseFloat(entry.AMT_IN);
-        totalOd += parseFloat(entry.CURRENT_OD);
-        totalRate += parseFloat(entry.TURNOVER_RATE);
-        count++;
       });
-
-      document.getElementById('avg-amt-in').innerText = totalAmtIn.toLocaleString(undefined, {maximumFractionDigits: 2});
-      document.getElementById('avg-current-od').innerText = totalOd.toLocaleString(undefined, {maximumFractionDigits: 2});
-      document.getElementById('avg-turnover-rate').innerText = (totalRate / count).toFixed(2) + '%';
-
-      // Mocking basic info
-      document.getElementById('prepared-date').innerText = '01-Apr-2025';
-      document.getElementById('input-cif').innerText = '5214585';
-      document.getElementById('customer-name').innerText = 'Srey Somma';
+      clearData();
     }
 
-    loadData();
+    document.getElementById('prepared-date').addEventListener('change', (e) => {
+      const selectedDate = e.target.value;
+      if (selectedDate) {
+        updateTableWithEmptyMonths(selectedDate);
+      }
+    });
+
+    document.getElementById('input-cif').addEventListener('change', async (e) => {
+      const cif = e.target.value.trim();
+      if (!cif) return;
+      const datasets = ['data1.json', 'data2.json'];
+      let customerName = '';
+
+      for (const file of datasets) {
+        try {
+          const res = await fetch(file);
+          const data = await res.json();
+          const found = data.find(d => d.CUSTOMER === cif);
+          if (found) {
+            customerName = found["Name(Eng)"];
+            break;
+          }
+        } catch (err) {
+          console.error(`Error loading ${file}:`, err);
+        }
+      }
+
+      document.getElementById('customer-name').value = customerName || 'Not Found';
+    });
   </script>
 </body>
 </html>
