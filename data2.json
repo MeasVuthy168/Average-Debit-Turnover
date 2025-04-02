@@ -1,5 +1,5 @@
 [
-{"MONTH": "31-01-25", "CUSTOMER": "2664746", "Name(Eng)": "Doeuk Rotnea", "CURRENT_OD": "-12247.94", "TURNOVER_RATE": "67.80", "AMT_IN": "8215.42966", "Effective_Date": "19-12-24"},
+  {"MONTH": "31-01-25", "CUSTOMER": "2664746", "Name(Eng)": "Doeuk Rotnea", "CURRENT_OD": "-12247.94", "TURNOVER_RATE": "67.80", "AMT_IN": "8215.42966", "Effective_Date": "19-12-24"},
 {"MONTH": "31-01-25", "CUSTOMER": "4612529", "Name(Eng)": "Meas Sovannary", "CURRENT_OD": "-9651.87", "TURNOVER_RATE": "136.00", "AMT_IN": "13017.78485", "Effective_Date": "03-07-24"},
 {"MONTH": "31-01-25", "CUSTOMER": "4947721", "Name(Eng)": "Tit Veasna", "CURRENT_OD": "-10031.97", "TURNOVER_RATE": "277.50", "AMT_IN": "27613.69001", "Effective_Date": "14-01-25"},
 {"MONTH": "31-01-25", "CUSTOMER": "5065729", "Name(Eng)": "Ung Sidet", "CURRENT_OD": "-10166.72", "TURNOVER_RATE": "25.30", "AMT_IN": "2545.99328", "Effective_Date": "09-12-24"},
@@ -3718,5 +3718,4 @@
 {"MONTH": "31-03-25", "CUSTOMER": "1463810", "Name(Eng)": "Sut Sinat", "CURRENT_OD": "-503.12", "TURNOVER_RATE": "131.20", "AMT_IN": "660", "Effective_Date": "11-10-22"},
 {"MONTH": "31-03-25", "CUSTOMER": "720097", "Name(Eng)": "Sien Dany", "CURRENT_OD": "-26872.82", "TURNOVER_RATE": "3.70", "AMT_IN": "1000", "Effective_Date": "19-08-24"},
 {"MONTH": "31-03-25", "CUSTOMER": "1816189", "Name(Eng)": "Chhoem Borin", "CURRENT_OD": "-743.1", "TURNOVER_RATE": "159.30", "AMT_IN": "1179.35", "Effective_Date": "17-02-23"}
-
 ]
