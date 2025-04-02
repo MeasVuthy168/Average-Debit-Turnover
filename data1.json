@@ -1,4 +1,5 @@
 [
+
 {"MONTH": "31-01-24", "CUSTOMER": "4041035", "Name(Eng)": "Thoeun Ratana", "CURRENT_OD": "0.23", "TURNOVER_RATE": "1", "AMT_IN": "1516.5", "Effective_Date": "23-10-23"},
 {"MONTH": "31-01-24", "CUSTOMER": "3044584", "Name(Eng)": "Sao Leakhena", "CURRENT_OD": "-6883.19", "TURNOVER_RATE": "0.496", "AMT_IN": "3463", "Effective_Date": "03-10-23"},
 {"MONTH": "31-01-24", "CUSTOMER": "4247049", "Name(Eng)": "Oung Sophat", "CURRENT_OD": "-2228.44", "TURNOVER_RATE": "2.65", "AMT_IN": "5979.06", "Effective_Date": "28-09-23"},
@@ -4179,7 +4180,7 @@
 {"MONTH": "31-08-24", "CUSTOMER": "2235169", "Name(Eng)": "Bin Socheath", "CURRENT_OD": "-13500750", "TURNOVER_RATE": "1.008", "AMT_IN": "13694229.519940", "Effective_Date": "25-07-24"},
 {"MONTH": "31-08-24", "CUSTOMER": "1491560", "Name(Eng)": "Chhun Kosal", "CURRENT_OD": "-2786.04", "TURNOVER_RATE": "1.838", "AMT_IN": "5174.749630", "Effective_Date": "25-10-23"},
 {"MONTH": "31-08-24", "CUSTOMER": "167260", "Name(Eng)": "Seng Veasna", "CURRENT_OD": "-39742.95", "TURNOVER_RATE": "0.051", "AMT_IN": "2052.91", "Effective_Date": "26-04-24"},
-#VALUE!
+{"MONTH": "31-08-24", "CUSTOMER": "2440877", "Name(Eng)": "Chut Srey Pov", "CURRENT_OD": "Erro", "TURNOVER_RATE": "1", "AMT_IN": "7741.545030", "Effective_Date": "14-03-24"},
 {"MONTH": "31-08-24", "CUSTOMER": "4617148", "Name(Eng)": "Ros Samphors", "CURRENT_OD": "-9999.76", "TURNOVER_RATE": "0.684", "AMT_IN": "6897.772860", "Effective_Date": "03-06-24"},
 {"MONTH": "31-08-24", "CUSTOMER": "3970551", "Name(Eng)": "Ram Vanny", "CURRENT_OD": "-9999.49", "TURNOVER_RATE": "0.717", "AMT_IN": "7236.277710", "Effective_Date": "15-05-24"},
 {"MONTH": "31-08-24", "CUSTOMER": "2034681", "Name(Eng)": "Phay Chamrong", "CURRENT_OD": "-9976.97", "TURNOVER_RATE": "0.238", "AMT_IN": "2392.713310", "Effective_Date": "21-11-23"},
@@ -9998,4 +9999,4 @@
 {"MONTH": "31-01-25", "CUSTOMER": "1636183", "Name(Eng)": "Ream Tey", "CURRENT_OD": "-10045.86", "TURNOVER_RATE": "2.527", "AMT_IN": "25138.25416", "Effective_Date": "25-12-24"},
 {"MONTH": "31-01-25", "CUSTOMER": "931176", "Name(Eng)": "Sam Sopheak", "CURRENT_OD": "-10129.9", "TURNOVER_RATE": "1.356", "AMT_IN": "13617.78899", "Effective_Date": "31-12-24"},
 {"MONTH": "31-01-25", "CUSTOMER": "912409", "Name(Eng)": "Phann Sao", "CURRENT_OD": "625.66", "TURNOVER_RATE": "1", "AMT_IN": "84753.48998", "Effective_Date": "08-11-24"}
-  ]
+]
