@@ -95,7 +95,6 @@
 
   <div class="actions">
     <button onclick="window.print()">Print</button>
-    <button onclick="exportPDF()">Share</button>
   </div>
 
   <table id="turnover-table">
@@ -122,7 +121,6 @@
     </tfoot>
   </table>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     let monthList = [];
     let combinedData = [];
@@ -181,16 +179,25 @@
     }
 
     async function fetchAndFillData(cif) {
-      let totalAmtIn = 0, totalOd = 0, totalRate = 0, count = 0;
+      let totalAmtIn = 0, totalOd = 0;
+      let totalRate = 0, count = 0;
       const tbody = document.getElementById('data-body');
 
-      const effDates = combinedData
-        .filter(d => d.CUSTOMER === cif && d.Effective_Date)
-        .map(d => new Date(d.Effective_Date.split('-').reverse().join('-')));
+      // Get all rows with latest effective date for this CIF
+      const validRows = [];
+      let latestEffective = null;
+      for (const d of combinedData) {
+        if (d.CUSTOMER === cif && d.Effective_Date) {
+          const dateParts = d.Effective_Date.split('-');
+          const formatted = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
+          if (!latestEffective || formatted > latestEffective) {
+            latestEffective = formatted;
+          }
+        }
+      }
 
-      const latestDate = effDates.length ? new Date(Math.max(...effDates)) : null;
-      const latestEff = latestDate
-        ? `${String(latestDate.getDate()).padStart(2, '0')}-${String(latestDate.getMonth() + 1).padStart(2, '0')}-${String(latestDate.getFullYear()).toString().slice(-2)}`
+      const latestEffectiveStr = latestEffective
+        ? `${String(latestEffective.getDate()).padStart(2, '0')}-${String(latestEffective.getMonth() + 1).padStart(2, '0')}-${String(latestEffective.getFullYear()).toString().slice(-2)}`
         : null;
 
       [...tbody.rows].forEach(row => {
@@ -204,7 +211,8 @@
 
           totalAmtIn += parseFloat(match.AMT_IN);
           totalOd += parseFloat(match.CURRENT_OD);
-          if (latestEff && formatDate(match.Effective_Date) === formatDate(latestEff)) {
+
+          if (match.Effective_Date === latestEffectiveStr) {
             totalRate += parseFloat(match.TURNOVER_RATE);
             count++;
           }
@@ -216,7 +224,7 @@
 
       document.getElementById('avg-amt-in').innerText = totalAmtIn.toLocaleString(undefined, { maximumFractionDigits: 2 });
       document.getElementById('avg-current-od').innerText = totalOd.toLocaleString(undefined, { maximumFractionDigits: 2 });
-      document.getElementById('avg-turnover-rate').innerText = count ? (totalRate / count).toFixed(2) + '%' : '0%';
+      document.getElementById('avg-turnover-rate').innerText = count ? (totalRate / count).toFixed(2) + '%' : '';
     }
 
     document.getElementById('prepared-date').addEventListener('change', async (e) => {
@@ -241,19 +249,6 @@
 
       await fetchAndFillData(cif);
     });
-
-    function exportPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.html(document.body, {
-        callback: function (pdf) {
-          pdf.save("debit_turnover_report.pdf");
-        },
-        x: 10,
-        y: 10,
-        html2canvas: { scale: 0.5 }
-      });
-    }
   </script>
 </body>
 </html>
