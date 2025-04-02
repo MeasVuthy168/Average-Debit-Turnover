@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yearly Average of Debit Turnover</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7fafd;
+      margin: 20px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .form-section {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .form-section div {
+      display: flex;
+      flex-direction: column;
+    }
+    .form-section label {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .form-section input {
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .button-section {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .button-section button {
+      margin: 0 10px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      background-color: #0b56c5;
+      color: white;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+      border-collapse: collapse;
+      background-color: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #dbe8f5;
+    }
+    tfoot td {
+      font-weight: bold;
+      background-color: #e3edf7;
+    }
+    .highlight {
+      color: #0b56c5;
+    }
+    .no-match {
+      background-color: #ffe0e0;
+      color: #a00;
+    }
+  </style>
+</head>
+<body>
+  <h2>YEARLY AVERAGE OF DEBIT TURNOVER</h2>
+  <div class="form-section">
+    <div>
+      <label for="prepared-date">Prepared Date</label>
+      <input type="date" id="prepared-date" />
+    </div>
+    <div>
+      <label for="input-cif">Input CIF</label>
+      <input type="text" id="input-cif" />
+    </div>
+    <div>
+      <label for="customer-name">Customer Name</label>
+      <input type="text" id="customer-name" disabled />
+    </div>
+  </div>
+
+  <div class="button-section">
+    <button onclick="window.print()">🖨️ Print</button>
+    <button onclick="exportToPDF()">📄 Export PDF</button>
+    <button onclick="shareToTelegram()">📤 Share to Telegram</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>MONTH</th>
+        <th>AMT_IN</th>
+        <th>CURRENT_OD</th>
+        <th>TURNOVER RATE</th>
+        <th>Effective Date</th>
+      </tr>
+    </thead>
+    <tbody id="data-body">
+      <!-- Dynamic rows will be inserted here -->
+    </tbody>
+    <tfoot>
+      <tr>
+        <td>Average</td>
+        <td id="avg-amt-in"></td>
+        <td id="avg-current-od"></td>
+        <td id="avg-turnover-rate"></td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    let monthList = [];
+    let combinedData = [];
+
+    function getLast12MonthEnds(baseDate) {
+      const months = [];
+      const date = new Date(baseDate);
+      date.setDate(1);
+      for (let i = 0; i < 12; i++) {
+        date.setMonth(date.getMonth() - 1);
+        const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        const dd = String(endOfMonth.getDate()).padStart(2, '0');
+        const mm = String(endOfMonth.getMonth() + 1).padStart(2, '0');
+        const yy = String(endOfMonth.getFullYear()).slice(-2);
+        months.push(`${dd}-${mm}-${yy}`);
+      }
+      return months;
+    }
+
+    function updateTableWithEmptyMonths(months) {
+      const tbody = document.getElementById('data-body');
+      tbody.innerHTML = '';
+      months.forEach(month => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${month}</td>
+          <td colspan="4" class="no-match">No data found</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    async function loadAllData() {
+      combinedData = [];
+      const files = ['data1.json', 'data2.json'];
+      for (const file of files) {
+        try {
+          const response = await fetch(file);
+          const data = await response.json();
+          combinedData = combinedData.concat(data);
+        } catch (error) {
+          console.error(`Failed to load ${file}:`, error);
+        }
+      }
+    }
+
+    function formatDate(dateStr) {
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+      let [dd, mm, yy] = parts;
+      if (yy.length === 4) yy = yy.slice(-2);
+      return `${dd.padStart(2, '0')}-${mm.padStart(2, '0')}-${yy}`;
+    }
+
+    function getNewestEffectiveMatch(matches) {
+      return matches.reduce((latest, curr) => {
+        const [cd, cm, cy] = curr.Effective_Date.split('-');
+        const [ld, lm, ly] = latest.Effective_Date.split('-');
+        const cDate = new Date(`20${cy}`, cm - 1, cd);
+        const lDate = new Date(`20${ly}`, lm - 1, ld);
+        return cDate > lDate ? curr : latest;
+      });
+    }
+
+    async function fetchAndFillData(cif) {
+      let totalAmtIn = 0, totalOd = 0, totalRate = 0, count = 0;
+      const tbody = document.getElementById('data-body');
+
+      [...tbody.rows].forEach(row => {
+        const month = formatDate(row.cells[0].innerText);
+        const matches = combinedData.filter(d => d.CUSTOMER === cif && formatDate(d.MONTH) === month);
+        row.classList.remove("no-match");
+
+        if (matches.length) {
+          const match = getNewestEffectiveMatch(matches);
+          row.innerHTML = `
+            <td>${month}</td>
+            <td>${parseFloat(match.AMT_IN).toLocaleString()}</td>
+            <td>${parseFloat(match.CURRENT_OD).toLocaleString()}</td>
+            <td>${parseFloat(match.TURNOVER_RATE).toFixed(3)}%</td>
+            <td>${match.Effective_Date}</td>
+          `;
+
+          totalAmtIn += parseFloat(match.AMT_IN);
+          totalOd += parseFloat(match.CURRENT_OD);
+          totalRate += parseFloat(match.TURNOVER_RATE);
+          count++;
+        } else {
+          row.classList.add("no-match");
+          row.innerHTML = `<td>${month}</td><td colspan="4" class="no-match">No data found</td>`;
+        }
+      });
+
+      document.getElementById('avg-amt-in').innerText = count ? totalAmtIn.toLocaleString(undefined, {maximumFractionDigits: 2}) : '';
+      document.getElementById('avg-current-od').innerText = count ? totalOd.toLocaleString(undefined, {maximumFractionDigits: 2}) : '';
+      document.getElementById('avg-turnover-rate').innerText = count ? (totalRate / count).toFixed(2) + '%' : '';
+    }
+
+    async function exportToPDF() {
+      const {{ jsPDF }} = window.jspdf;
+      const doc = new jsPDF();
+      doc.html(document.body, {
+        callback: function (pdf) {
+          pdf.save("debit-turnover.pdf");
+        },
+        x: 10,
+        y: 10,
+        html2canvas: { scale: 0.5 }
+      });
+    }
+
+    function shareToTelegram() {
+      const message = encodeURIComponent("Check out the yearly debit turnover summary PDF.");
+      const url = encodeURIComponent(window.location.href);
+      const telegramLink = `https://t.me/share/url?url=${url}&text=${message}`;
+      window.open(telegramLink, '_blank');
+    }
+
+    document.getElementById('prepared-date').addEventListener('change', async (e) => {
+      const selectedDate = e.target.value;
+      if (selectedDate) {
+        monthList = getLast12MonthEnds(selectedDate);
+        updateTableWithEmptyMonths(monthList);
+        document.getElementById('input-cif').value = '';
+        document.getElementById('customer-name').value = '';
+        await loadAllData();
+      }
+    });
+
+    document.getElementById('input-cif').addEventListener('change', async (e) => {
+      const cif = e.target.value.trim();
+      if (!cif) return;
+
+      if (!combinedData.length) await loadAllData();
+
+      const found = combinedData.find(d => d.CUSTOMER === cif);
+      document.getElementById('customer-name').value = found ? found["Name(Eng)"] : 'Not Found';
+
+      await fetchAndFillData(cif);
+    });
+  </script>
+</body>
+</html>
