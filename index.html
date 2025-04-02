@@ -74,6 +74,9 @@
     .not-found {
       background-color: #fff3cd !important;
     }
+    .latest-effective {
+      color: #555;
+    }
   </style>
 </head>
 <body>
@@ -212,6 +215,7 @@
           if (formatDate(match.Effective_Date) === latestEffStr) {
             totalRate += parseFloat(match.TURNOVER_RATE);
             count++;
+            row.classList.add('latest-effective');
           }
         } else {
           row.classList.add("not-found");
