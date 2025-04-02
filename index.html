@@ -75,7 +75,12 @@
       background-color: #fff3cd !important;
     }
     .oldest {
-      color: #555;
+      background-color: #f2f2f2;
+      color: #333;
+    }
+    .newest {
+      background-color: #e1f5e6;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -219,6 +224,7 @@
           if (formatDate(match.Effective_Date) === latestEffStr) {
             totalRate += parseFloat(match.TURNOVER_RATE);
             count++;
+            row.classList.add('newest');
           }
           if (formatDate(match.Effective_Date) === oldestEffStr) {
             row.classList.add('oldest');
