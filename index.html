@@ -74,7 +74,7 @@
     .not-found {
       background-color: #fff3cd !important;
     }
-    .latest-effective {
+    .oldest {
       color: #555;
     }
   </style>
@@ -185,18 +185,22 @@
       const tbody = document.getElementById('data-body');
 
       let latestEff = null;
+      let oldestEff = null;
+
       combinedData.forEach(d => {
         if (d.CUSTOMER === cif && d.Effective_Date) {
           const dParts = d.Effective_Date.split('-');
           const formatted = new Date(`${dParts[2].length === 2 ? '20' + dParts[2] : dParts[2]}-${dParts[1]}-${dParts[0]}`);
-          if (!latestEff || formatted > latestEff) {
-            latestEff = formatted;
-          }
+          if (!latestEff || formatted > latestEff) latestEff = formatted;
+          if (!oldestEff || formatted < oldestEff) oldestEff = formatted;
         }
       });
 
       const latestEffStr = latestEff
         ? `${String(latestEff.getDate()).padStart(2, '0')}-${String(latestEff.getMonth() + 1).padStart(2, '0')}-${String(latestEff.getFullYear()).slice(-2)}`
+        : null;
+      const oldestEffStr = oldestEff
+        ? `${String(oldestEff.getDate()).padStart(2, '0')}-${String(oldestEff.getMonth() + 1).padStart(2, '0')}-${String(oldestEff.getFullYear()).slice(-2)}`
         : null;
 
       [...tbody.rows].forEach(row => {
@@ -215,7 +219,9 @@
           if (formatDate(match.Effective_Date) === latestEffStr) {
             totalRate += parseFloat(match.TURNOVER_RATE);
             count++;
-            row.classList.add('latest-effective');
+          }
+          if (formatDate(match.Effective_Date) === oldestEffStr) {
+            row.classList.add('oldest');
           }
         } else {
           row.classList.add("not-found");
