@@ -109,8 +109,10 @@
       for (let i = 0; i < 12; i++) {
         date.setMonth(date.getMonth() - 1);
         const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-        const formatted = endOfMonth.toLocaleDateString('en-GB').split('/').join('-').replace(/\d{4}/, y => y.slice(2));
-        months.push(formatted);
+        const dd = String(endOfMonth.getDate()).padStart(2, '0');
+        const mm = String(endOfMonth.getMonth() + 1).padStart(2, '0');
+        const yy = String(endOfMonth.getFullYear()).slice(-2);
+        months.push(`${dd}-${mm}-${yy}`);
       }
       return months;
     }
@@ -145,13 +147,18 @@
       }
     }
 
+    function formatDate(dateStr) {
+      const [dd, mm, yy] = dateStr.split('-');
+      return `${dd.padStart(2, '0')}-${mm.padStart(2, '0')}-${yy.slice(-2)}`;
+    }
+
     async function fetchAndFillData(cif) {
       let totalAmtIn = 0, totalOd = 0, totalRate = 0, count = 0;
       const tbody = document.getElementById('data-body');
 
       [...tbody.rows].forEach(row => {
-        const month = row.cells[0].innerText;
-        const match = combinedData.find(d => d.CUSTOMER === cif && d.MONTH === month);
+        const month = formatDate(row.cells[0].innerText);
+        const match = combinedData.find(d => d.CUSTOMER === cif && formatDate(d.MONTH) === month);
         if (match) {
           row.cells[1].innerText = parseFloat(match.AMT_IN).toLocaleString();
           row.cells[2].innerText = parseFloat(match.CURRENT_OD).toLocaleString();
