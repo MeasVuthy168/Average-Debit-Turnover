@@ -78,12 +78,10 @@
     <thead>
       <tr>
         <th>MONTH</th>
-        <th>CUSTOMER</th>
-        <th>Name(Eng)</th>
-        <th>CURRENT_OD</th>
-        <th>TURNOVER_RATE</th>
         <th>AMT_IN</th>
-        <th>Effective_Date</th>
+        <th>CURRENT_OD</th>
+        <th>TURNOVER RATE</th>
+        <th>Effective Date</th>
       </tr>
     </thead>
     <tbody id="data-body">
@@ -91,10 +89,10 @@
     </tbody>
     <tfoot>
       <tr>
-        <td colspan="3">Average</td>
+        <td>Average</td>
+        <td id="avg-amt-in"></td>
         <td id="avg-current-od"></td>
         <td id="avg-turnover-rate"></td>
-        <td id="avg-amt-in"></td>
         <td></td>
       </tr>
     </tfoot>
@@ -111,11 +109,9 @@
         const formatted = endOfMonth.toLocaleDateString('en-GB').split('/').join('-').replace(/\d{4}/, y => y.slice(2));
         months.push({
           MONTH: formatted,
-          CUSTOMER: '',
-          "Name(Eng)": '',
+          AMT_IN: '',
           CURRENT_OD: '',
           TURNOVER_RATE: '',
-          AMT_IN: '',
           Effective_Date: ''
         });
       }
@@ -138,11 +134,9 @@
         const row = document.createElement('tr');
         row.innerHTML = `
           <td>${entry.MONTH}</td>
-          <td>${entry.CUSTOMER}</td>
-          <td>${entry["Name(Eng)"]}</td>
+          <td>${entry.AMT_IN}</td>
           <td>${entry.CURRENT_OD}</td>
           <td>${entry.TURNOVER_RATE}</td>
-          <td>${entry.AMT_IN}</td>
           <td>${entry.Effective_Date}</td>
         `;
         tbody.appendChild(row);
