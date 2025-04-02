@@ -33,18 +33,21 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
-    .button-section {
+    .actions {
       text-align: center;
       margin-bottom: 20px;
     }
-    .button-section button {
-      margin: 0 10px;
+    .actions button {
       padding: 8px 16px;
+      margin: 0 5px;
       border: none;
       border-radius: 5px;
-      background-color: #0b56c5;
+      background-color: #007bff;
       color: white;
       cursor: pointer;
+    }
+    .actions button:hover {
+      background-color: #0056b3;
     }
     table {
       width: 100%;
@@ -68,9 +71,8 @@
     .highlight {
       color: #0b56c5;
     }
-    .no-match {
-      background-color: #ffe0e0;
-      color: #a00;
+    .not-found {
+      background-color: #fff3cd !important;
     }
   </style>
 </head>
@@ -91,13 +93,12 @@
     </div>
   </div>
 
-  <div class="button-section">
-    <button onclick="window.print()">🖨️ Print</button>
-    <button onclick="exportToPDF()">📄 Export PDF</button>
-    <button onclick="shareToTelegram()">📤 Share to Telegram</button>
+  <div class="actions">
+    <button onclick="window.print()">Print</button>
+    <button onclick="exportPDF()">Export PDF</button>
   </div>
 
-  <table>
+  <table id="turnover-table">
     <thead>
       <tr>
         <th>MONTH</th>
@@ -148,7 +149,10 @@
         const row = document.createElement('tr');
         row.innerHTML = `
           <td>${month}</td>
-          <td colspan="4" class="no-match">No data found</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
         `;
         tbody.appendChild(row);
       });
@@ -176,68 +180,42 @@
       return `${dd.padStart(2, '0')}-${mm.padStart(2, '0')}-${yy}`;
     }
 
-    function getNewestEffectiveMatch(matches) {
-      return matches.reduce((latest, curr) => {
-        const [cd, cm, cy] = curr.Effective_Date.split('-');
-        const [ld, lm, ly] = latest.Effective_Date.split('-');
-        const cDate = new Date(`20${cy}`, cm - 1, cd);
-        const lDate = new Date(`20${ly}`, lm - 1, ld);
-        return cDate > lDate ? curr : latest;
-      });
-    }
-
     async function fetchAndFillData(cif) {
       let totalAmtIn = 0, totalOd = 0, totalRate = 0, count = 0;
       const tbody = document.getElementById('data-body');
 
+      // Find latest Effective Date
+      const dates = combinedData
+        .filter(d => d.CUSTOMER === cif)
+        .map(d => d.Effective_Date)
+        .map(d => new Date(d.split('-').reverse().join('-')));
+      const latestDate = new Date(Math.max.apply(null, dates));
+      const latestEff = `${String(latestDate.getDate()).padStart(2, '0')}-${String(latestDate.getMonth() + 1).padStart(2, '0')}-${String(latestDate.getFullYear()).slice(-2)}`;
+
       [...tbody.rows].forEach(row => {
         const month = formatDate(row.cells[0].innerText);
-        const matches = combinedData.filter(d => d.CUSTOMER === cif && formatDate(d.MONTH) === month);
-        row.classList.remove("no-match");
-
-        if (matches.length) {
-          const match = getNewestEffectiveMatch(matches);
-          row.innerHTML = `
-            <td>${month}</td>
-            <td>${parseFloat(match.AMT_IN).toLocaleString()}</td>
-            <td>${parseFloat(match.CURRENT_OD).toLocaleString()}</td>
-            <td>${parseFloat(match.TURNOVER_RATE).toFixed(3)}%</td>
-            <td>${match.Effective_Date}</td>
-          `;
+        const match = combinedData.find(d => d.CUSTOMER === cif && formatDate(d.MONTH) === month);
+        if (match) {
+          row.cells[1].innerText = parseFloat(match.AMT_IN).toLocaleString();
+          row.cells[2].innerText = parseFloat(match.CURRENT_OD).toLocaleString();
+          row.cells[3].innerText = match.TURNOVER_RATE + '%';
+          row.cells[4].innerText = match.Effective_Date;
 
           totalAmtIn += parseFloat(match.AMT_IN);
           totalOd += parseFloat(match.CURRENT_OD);
-          totalRate += parseFloat(match.TURNOVER_RATE);
-          count++;
+          if (match.Effective_Date === latestEff) {
+            totalRate += parseFloat(match.TURNOVER_RATE);
+            count++;
+          }
         } else {
-          row.classList.add("no-match");
-          row.innerHTML = `<td>${month}</td><td colspan="4" class="no-match">No data found</td>`;
+          row.classList.add("not-found");
+          row.cells[1].innerText = row.cells[2].innerText = row.cells[3].innerText = row.cells[4].innerText = 'No Data';
         }
       });
 
-      document.getElementById('avg-amt-in').innerText = count ? totalAmtIn.toLocaleString(undefined, {maximumFractionDigits: 2}) : '';
-      document.getElementById('avg-current-od').innerText = count ? totalOd.toLocaleString(undefined, {maximumFractionDigits: 2}) : '';
-      document.getElementById('avg-turnover-rate').innerText = count ? (totalRate / count).toFixed(2) + '%' : '';
-    }
-
-    async function exportToPDF() {
-      const {{ jsPDF }} = window.jspdf;
-      const doc = new jsPDF();
-      doc.html(document.body, {
-        callback: function (pdf) {
-          pdf.save("debit-turnover.pdf");
-        },
-        x: 10,
-        y: 10,
-        html2canvas: { scale: 0.5 }
-      });
-    }
-
-    function shareToTelegram() {
-      const message = encodeURIComponent("Check out the yearly debit turnover summary PDF.");
-      const url = encodeURIComponent(window.location.href);
-      const telegramLink = `https://t.me/share/url?url=${url}&text=${message}`;
-      window.open(telegramLink, '_blank');
+      document.getElementById('avg-amt-in').innerText = totalAmtIn.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      document.getElementById('avg-current-od').innerText = totalOd.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      document.getElementById('avg-turnover-rate').innerText = count ? (totalRate / count).toFixed(2) + '%' : '0%';
     }
 
     document.getElementById('prepared-date').addEventListener('change', async (e) => {
@@ -262,6 +240,19 @@
 
       await fetchAndFillData(cif);
     });
+
+    function exportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.html(document.body, {
+        callback: function (pdf) {
+          pdf.save("debit_turnover_report.pdf");
+        },
+        x: 10,
+        y: 10,
+        html2canvas: { scale: 0.5 }
+      });
+    }
   </script>
 </body>
 </html>
