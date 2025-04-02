@@ -100,6 +100,7 @@
 
   <script>
     let monthList = [];
+    let combinedData = [];
 
     function getLast12MonthEnds(baseDate) {
       const months = [];
@@ -108,8 +109,10 @@
       for (let i = 0; i < 12; i++) {
         date.setMonth(date.getMonth() - 1);
         const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-        const formatted = endOfMonth.toLocaleDateString('en-GB').split('/').join('-').replace(/\d{4}/, y => y.slice(2));
-        months.push(formatted);
+        const dd = String(endOfMonth.getDate()).padStart(2, '0');
+        const mm = String(endOfMonth.getMonth() + 1).padStart(2, '0');
+        const yy = String(endOfMonth.getFullYear()).slice(-2);
+        months.push(`${dd}-${mm}-${yy}`);
       }
       return months;
     }
@@ -130,25 +133,37 @@
       });
     }
 
-    async function fetchAndFillData(cif) {
-      const datasets = ['data1.json', 'data2.json'];
-      const tbody = document.getElementById('data-body');
-      let totalAmtIn = 0, totalOd = 0, totalRate = 0, count = 0;
-
-      const allData = [];
-      for (const file of datasets) {
+    async function loadAllData() {
+      combinedData = [];
+      const files = ['data1.json', 'data2.json'];
+      for (const file of files) {
         try {
-          const res = await fetch(file);
-          const data = await res.json();
-          allData.push(...data);
-        } catch (err) {
-          console.error(`Error loading ${file}:`, err);
+          const response = await fetch(file);
+          const data = await response.json();
+          combinedData = combinedData.concat(data);
+        } catch (error) {
+          console.error(`Failed to load ${file}:`, error);
         }
       }
+    }
+
+    function formatDate(dateStr) {
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return dateStr;
+
+      let [dd, mm, yy] = parts;
+      if (yy.length === 4) yy = yy.slice(-2);
+
+      return `${dd.padStart(2, '0')}-${mm.padStart(2, '0')}-${yy}`;
+    }
+
+    async function fetchAndFillData(cif) {
+      let totalAmtIn = 0, totalOd = 0, totalRate = 0, count = 0;
+      const tbody = document.getElementById('data-body');
 
       [...tbody.rows].forEach(row => {
-        const month = row.cells[0].innerText;
-        const match = allData.find(d => d.CUSTOMER === cif && d.MONTH === month);
+        const month = formatDate(row.cells[0].innerText);
+        const match = combinedData.find(d => d.CUSTOMER === cif && formatDate(d.MONTH) === month);
         if (match) {
           row.cells[1].innerText = parseFloat(match.AMT_IN).toLocaleString();
           row.cells[2].innerText = parseFloat(match.CURRENT_OD).toLocaleString();
@@ -167,39 +182,26 @@
       document.getElementById('avg-turnover-rate').innerText = count ? (totalRate / count).toFixed(2) + '%' : '';
     }
 
-    document.getElementById('prepared-date').addEventListener('change', (e) => {
+    document.getElementById('prepared-date').addEventListener('change', async (e) => {
       const selectedDate = e.target.value;
       if (selectedDate) {
         monthList = getLast12MonthEnds(selectedDate);
         updateTableWithEmptyMonths(monthList);
         document.getElementById('input-cif').value = '';
         document.getElementById('customer-name').value = '';
+        await loadAllData();
       }
     });
 
     document.getElementById('input-cif').addEventListener('change', async (e) => {
       const cif = e.target.value.trim();
       if (!cif) return;
-      const datasets = ['data1.json', 'data2.json'];
-      let customerName = '';
 
-      for (const file of datasets) {
-        try {
-          const res = await fetch(file);
-          const data = await res.json();
-          const found = data.find(d => d.CUSTOMER === cif);
-          if (found) {
-            customerName = found["Name(Eng)"];
-            break;
-          }
-        } catch (err) {
-          console.error(`Error loading ${file}:`, err);
-        }
-      }
+      if (!combinedData.length) await loadAllData();
 
-      document.getElementById('customer-name').value = customerName || 'Not Found';
+      const found = combinedData.find(d => d.CUSTOMER === cif);
+      document.getElementById('customer-name').value = found ? found["Name(Eng)"] : 'Not Found';
 
-      // Now fetch and fill data into table
       await fetchAndFillData(cif);
     });
   </script>
