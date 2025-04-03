@@ -29,7 +29,7 @@
     .form-section {
       display: flex;
       flex-wrap: wrap;
-      gap: 20px; /* Fix spacing between inputs */
+      gap: 20px;
       margin-bottom: 20px;
     }
 
@@ -86,7 +86,7 @@
       border-collapse: collapse;
       background-color: white;
       font-size: 14px;
-      table-layout: fixed; /* Column content shrinks */
+      table-layout: fixed;
     }
 
     th, td {
@@ -120,15 +120,33 @@
       font-weight: bold;
     }
 
+    /* ✅ Mobile Fix */
     @media (max-width: 600px) {
       .form-section {
         flex-direction: column;
-        gap: 10px;
+        gap: 4px;
+        margin-bottom: 10px;
       }
 
       .form-section .half,
       .form-section .full {
         width: 100%;
+      }
+
+      .form-section div {
+        margin-bottom: 0 !important;
+        padding: 0 !important;
+      }
+
+      .form-section label {
+        margin-bottom: 2px !important;
+        font-size: 14px;
+      }
+
+      .form-section input {
+        padding: 6px 10px;
+        font-size: 14px;
+        margin-bottom: 4px;
       }
 
       table {
@@ -207,7 +225,7 @@
     </table>
   </div>
 
-  <!-- Libraries -->
+  <!-- Export Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
