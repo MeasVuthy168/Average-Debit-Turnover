@@ -10,35 +10,43 @@
       background-color: #f7fafd;
       margin: 20px;
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
+    .header {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-bottom: 10px;
     }
+    .header img {
+      height: 60px;
+    }
+
     .form-section {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      gap: 10px;
       margin-bottom: 20px;
     }
     .form-section div {
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 150px;
+      flex: 0 0 auto;
+      width: 200px;
     }
     .form-section label {
       font-weight: bold;
       margin-bottom: 5px;
+      display: block;
     }
     .form-section input {
       padding: 6px;
+      width: 100%;
       border: 1px solid #ccc;
       border-radius: 4px;
+      font-size: 14px;
     }
+
     .actions {
       text-align: center;
       margin-bottom: 20px;
-      flex-wrap: wrap;
     }
     .actions button {
       padding: 8px 16px;
@@ -52,6 +60,7 @@
     .actions button:hover {
       background-color: #0056b3;
     }
+
     .table-container {
       overflow-x: auto;
     }
@@ -76,81 +85,20 @@
       font-weight: bold;
       background-color: #e3edf7;
     }
-    .highlight {
-      color: #0b56c5;
-    }
     .not-found {
       background-color: #fff3cd !important;
     }
     .oldest {
       background-color: #f2f2f2;
-      color: #333;
     }
     .newest {
       background-color: #e1f5e6;
       font-weight: bold;
     }
-    @media (max-width: 600px) {
-  body {
-    padding: 10px;
-    margin: 0;
-  }
-  h2 {
-    font-size: 18px;
-    text-align: center;
-  }
-  .form-section {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-  .form-section div {
-    flex: 1 1 calc(33.333% - 10px);
-    min-width: 120px;
-    margin: 0;
-    padding: 0;
-  }
-  .form-section label {
-    margin-bottom: 2px;
-    font-size: 13px;
-  }
-  .form-section input {
-    padding: 6px 8px;
-    font-size: 14px;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  .actions {
-    margin-top: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .actions button {
-    width: 100%;
-    font-size: 14px;
-  }
-  table {
-    font-size: 12px;
-    width: 100%;
-  }
-  .table-container {
-    overflow-x: auto;
-  }
-}
-      table {
-        font-size: 12px;
-      }
-      .form-section {
-        flex-direction: column;
-        align-items: stretch;
-      }
-    }
+
     @media print {
       body {
-        background-color: white !important;
+        background-color: white;
         margin: 0;
         padding: 0;
       }
@@ -161,17 +109,14 @@
         width: 100%;
         font-size: 12px;
       }
-      h2 {
-        margin-bottom: 10px;
-      }
     }
   </style>
 </head>
 <body>
-  <div style="display: flex; justify-content: flex-end; align-items: center;">
-    <img src="logo.png" alt="Logo" style="height: 60px; margin-right: 10px;" />
+  <div class="header">
+    <img src="logo.png" alt="Logo" />
   </div>
-  <h2>YEARLY AVERAGE OF DEBIT TURNOVER</h2>
+
   <div class="form-section">
     <div>
       <label for="prepared-date">Prepared Date</label>
@@ -217,6 +162,7 @@
     </table>
   </div>
 
+  <!-- Required libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
@@ -363,7 +309,7 @@
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
-      html2pdf().set(opt).from(element).save();
+      html2pdf().from(element).set(opt).save();
     }
 
     function printPage() {
