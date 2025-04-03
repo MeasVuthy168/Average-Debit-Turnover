@@ -119,6 +119,10 @@
   </style>
 </head>
 <body>
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2>YEARLY AVERAGE OF DEBIT TURNOVER</h2>
+    <img src="logo.png" alt="Logo" style="height: 60px; margin-right: 10px;" />
+  </div>
   <h2>YEARLY AVERAGE OF DEBIT TURNOVER</h2>
   <div class="form-section">
     <div>
@@ -311,7 +315,7 @@
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
-      html2pdf().from(element).set(opt).save();
+      html2pdf().set(opt).from(element).save();
     }
 
     function printPage() {
