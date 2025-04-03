@@ -90,7 +90,6 @@
       background-color: #e1f5e6;
       font-weight: bold;
     }
-
     @media (max-width: 600px) {
       table {
         font-size: 12px;
@@ -98,6 +97,23 @@
       .form-section {
         flex-direction: column;
         align-items: stretch;
+      }
+    }
+    @media print {
+      body {
+        background-color: white !important;
+        margin: 0;
+        padding: 0;
+      }
+      .form-section, .actions {
+        display: none !important;
+      }
+      table {
+        width: 100%;
+        font-size: 12px;
+      }
+      h2 {
+        margin-bottom: 10px;
       }
     }
   </style>
@@ -120,7 +136,7 @@
   </div>
 
   <div class="actions">
-    <button onclick="window.print()">Print</button>
+    <button onclick="printPage()">Print</button>
     <button onclick="exportToExcel()">Export to Excel</button>
     <button onclick="exportToPDF()">Export to PDF</button>
   </div>
@@ -149,9 +165,8 @@
     </table>
   </div>
 
-  <!-- External libraries for export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <script>
     let monthList = [];
@@ -280,18 +295,27 @@
     });
 
     function exportToExcel() {
+      const table = document.getElementById("turnover-table");
       const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.table_to_sheet(document.getElementById('turnover-table'));
+      const ws = XLSX.utils.table_to_sheet(table);
       XLSX.utils.book_append_sheet(wb, ws, "Turnover");
       XLSX.writeFile(wb, "Turnover_Average.xlsx");
     }
 
-    async function exportToPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.text("YEARLY AVERAGE OF DEBIT TURNOVER", 14, 15);
-      doc.autoTable({ html: '#turnover-table', startY: 20 });
-      doc.save("Turnover_Average.pdf");
+    function exportToPDF() {
+      const element = document.body;
+      const opt = {
+        margin: 0.5,
+        filename: 'Turnover_Average.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().from(element).set(opt).save();
+    }
+
+    function printPage() {
+      window.print();
     }
   </script>
 </body>
