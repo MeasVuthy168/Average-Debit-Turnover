@@ -35,6 +35,7 @@
 
     .form-section .half {
       flex: 1 1 calc(50% - 10px);
+      min-width: 220px; /* Fix overlap on desktop */
     }
 
     .form-section .full {
@@ -75,14 +76,13 @@
     }
 
     .table-container {
+      width: 100%;
       overflow-x: auto;
     }
 
     table {
       width: 100%;
       min-width: 600px;
-      max-width: 1000px;
-      margin: 0 auto;
       border-collapse: collapse;
       background-color: white;
       font-size: 14px;
@@ -119,12 +119,18 @@
     @media (max-width: 600px) {
       .form-section {
         flex-direction: column;
-        gap: 8px;
+        gap: 10px;
       }
 
       .form-section .half,
       .form-section .full {
-        flex: 1 1 100%;
+        width: 100%;
+        min-width: unset;
+      }
+
+      table {
+        font-size: 12px;
+        min-width: unset;
       }
     }
 
@@ -198,6 +204,7 @@
     </table>
   </div>
 
+  <!-- Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
