@@ -91,25 +91,49 @@
       font-weight: bold;
     }
     @media (max-width: 600px) {
+  body {
+    padding: 10px;
+    margin: 0;
+  }
+  h2 {
+    font-size: 18px;
+    text-align: center;
+  }
   .form-section {
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
+    gap: 8px;
     margin-bottom: 10px;
   }
   .form-section div {
+    width: 100%;
     margin-bottom: 0;
   }
   .form-section label {
     margin-bottom: 2px;
+    font-size: 14px;
   }
   .form-section input {
-    padding: 6px;
+    padding: 8px;
     font-size: 14px;
   }
   .actions {
     margin-top: 10px;
+    flex-wrap: wrap;
   }
+  .actions button {
+    margin: 5px 0;
+    width: 100%;
+    font-size: 14px;
+  }
+  table {
+    font-size: 12px;
+    width: 100%;
+  }
+  .table-container {
+    overflow-x: auto;
+  }
+}
       table {
         font-size: 12px;
       }
