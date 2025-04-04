@@ -14,15 +14,33 @@
     if (!user) {
       window.location.href = "https://measvuthy168.github.io/CreditAssist/login.html";
     }
+
+    // Auto logout after 1 minute of inactivity
+    const AUTO_LOGOUT_MINUTES = 1;
+    let logoutTimer;
+
+    function resetLogoutTimer() {
+      clearTimeout(logoutTimer);
+      logoutTimer = setTimeout(() => {
+        sessionStorage.removeItem("loggedInUser");
+        alert("Session expired due to inactivity. Please log in again.");
+        window.location.href = "https://measvuthy168.github.io/CreditAssist/login.html";
+      }, AUTO_LOGOUT_MINUTES * 60 * 1000);
+    }
+
+    window.onload = resetLogoutTimer;
+    document.onmousemove = resetLogoutTimer;
+    document.onkeydown = resetLogoutTimer;
+    document.onclick = resetLogoutTimer;
   </script>
 
   <style>
-    /* Your entire original CSS remains unchanged */
     body {
       font-family: Arial, sans-serif;
       background-color: #f7fafd;
       margin: 20px;
     }
+
     .khmer-back-wrapper {
       background-color: #007bff;
       padding: 10px;
@@ -30,6 +48,7 @@
       border-radius: 8px;
       margin: 20px 0;
     }
+
     .khmer-back-button {
       background: none;
       border: none;
@@ -38,9 +57,11 @@
       font-family: 'Khmer OS System', Arial, sans-serif;
       cursor: pointer;
     }
+
     .khmer-back-button:hover {
       text-decoration: underline;
     }
+
     .header {
       display: flex;
       justify-content: space-between;
@@ -48,30 +69,37 @@
       margin-bottom: 10px;
       margin-top: 10px;
     }
+
     .header h2 {
       margin: 0;
     }
+
     .header img {
       height: 60px;
     }
+
     .form-section {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       margin-bottom: 20px;
     }
+
     .form-section .half {
       flex: 1 1 calc(50% - 10px);
       min-width: 220px;
     }
+
     .form-section .full {
       flex: 1 1 100%;
     }
+
     .form-section label {
       font-weight: bold;
       margin-bottom: 4px;
       display: block;
     }
+
     .form-section input {
       padding: 6px;
       width: 100%;
@@ -79,10 +107,12 @@
       border-radius: 4px;
       font-size: 14px;
     }
+
     .actions {
       text-align: center;
       margin-bottom: 20px;
     }
+
     .actions button {
       padding: 8px 16px;
       margin: 5px;
@@ -92,13 +122,16 @@
       color: white;
       cursor: pointer;
     }
+
     .actions button:hover {
       background-color: #0056b3;
     }
+
     .table-container {
       width: 100%;
       overflow-x: auto;
     }
+
     table {
       width: 100%;
       min-width: 600px;
@@ -107,6 +140,7 @@
       font-size: 14px;
       table-layout: fixed;
     }
+
     th, td {
       border: 1px solid #ccc;
       padding: 8px;
@@ -115,49 +149,60 @@
       overflow-wrap: break-word;
       white-space: normal;
     }
+
     th {
       background-color: #dbe8f5;
     }
+
     tfoot td {
       font-weight: bold;
       background-color: #e3edf7;
     }
+
     .not-found {
       background-color: #fff3cd !important;
     }
+
     .oldest {
       background-color: #f2f2f2;
     }
+
     .newest {
       background-color: #e1f5e6;
       font-weight: bold;
     }
+
     @media (max-width: 600px) {
       .form-section {
         flex-direction: column;
         gap: 10px;
       }
+
       .form-section .half,
       .form-section .full {
         width: 100%;
         min-width: unset;
       }
+
       table {
         font-size: 12px;
         min-width: unset;
       }
     }
+
     @media print {
       body {
         background-color: white;
         margin: 0;
         padding: 0;
       }
+
       .form-section,
       .actions,
       .khmer-back-wrapper {
         display: none !important;
       }
+
       table {
         width: 100%;
         font-size: 12px;
