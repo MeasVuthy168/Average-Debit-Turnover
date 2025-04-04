@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>Yearly Average of Debit Turnover</title>
   <style>
     body {
@@ -56,6 +59,14 @@
       color: #0b56c5;
     }
   </style>
+
+  <script>
+    // Redirect to login if user is not logged in
+    const user = sessionStorage.getItem("loggedInUser");
+    if (!user) {
+      window.location.href = "login.html";
+    }
+  </script>
 </head>
 <body>
   <h2>YEARLY AVERAGE OF DEBIT TURNOVER</h2>
@@ -84,9 +95,7 @@
         <th>Effective Date</th>
       </tr>
     </thead>
-    <tbody id="data-body">
-      <!-- Dynamic rows will be inserted here -->
-    </tbody>
+    <tbody id="data-body"></tbody>
     <tfoot>
       <tr>
         <td>Average</td>
@@ -150,10 +159,8 @@
     function formatDate(dateStr) {
       const parts = dateStr.split('-');
       if (parts.length !== 3) return dateStr;
-
       let [dd, mm, yy] = parts;
       if (yy.length === 4) yy = yy.slice(-2);
-
       return `${dd.padStart(2, '0')}-${mm.padStart(2, '0')}-${yy}`;
     }
 
@@ -196,12 +203,9 @@
     document.getElementById('input-cif').addEventListener('change', async (e) => {
       const cif = e.target.value.trim();
       if (!cif) return;
-
       if (!combinedData.length) await loadAllData();
-
       const found = combinedData.find(d => d.CUSTOMER === cif);
       document.getElementById('customer-name').value = found ? found["Name(Eng)"] : 'Not Found';
-
       await fetchAndFillData(cif);
     });
   </script>
