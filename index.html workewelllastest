@@ -8,32 +8,6 @@
   <meta http-equiv="Expires" content="0" />
   <title>Yearly Average of Debit Turnover</title>
 
-  <script>
-    // Redirect to login page if not logged in
-    const user = sessionStorage.getItem("loggedInUser");
-    if (!user) {
-      window.location.href = "https://measvuthy168.github.io/CreditAssist/login.html";
-    }
-
-    // Auto logout after 1 minute of inactivity
-    const AUTO_LOGOUT_MINUTES = 1;
-    let logoutTimer;
-
-    function resetLogoutTimer() {
-      clearTimeout(logoutTimer);
-      logoutTimer = setTimeout(() => {
-        sessionStorage.removeItem("loggedInUser");
-        alert("Session expired due to inactivity. Please log in again.");
-        window.location.href = "https://measvuthy168.github.io/CreditAssist/login.html";
-      }, AUTO_LOGOUT_MINUTES * 60 * 1000);
-    }
-
-    window.onload = resetLogoutTimer;
-    document.onmousemove = resetLogoutTimer;
-    document.onkeydown = resetLogoutTimer;
-    document.onclick = resetLogoutTimer;
-  </script>
-
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -42,11 +16,14 @@
     }
 
     .khmer-back-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
       background-color: #007bff;
       padding: 10px;
       text-align: center;
-      border-radius: 8px;
-      margin: 20px 0;
+      z-index: 1000;
     }
 
     .khmer-back-button {
@@ -62,12 +39,15 @@
       text-decoration: underline;
     }
 
+    .spacer {
+      height: 60px;
+    }
+
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
-      margin-top: 10px;
     }
 
     .header h2 {
@@ -108,6 +88,15 @@
       font-size: 14px;
     }
 
+    .readonly-label {
+      padding: 6px 8px;
+      display: block;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: #f0f0f0;
+      font-size: 14px;
+    }
+
     .actions {
       text-align: center;
       margin-bottom: 20px;
@@ -137,13 +126,13 @@
       min-width: 600px;
       border-collapse: collapse;
       background-color: white;
-      font-size: 14px;
+      font-size: 13px;
       table-layout: fixed;
     }
 
     th, td {
       border: 1px solid #ccc;
-      padding: 8px;
+      padding: 6px;
       text-align: center;
       word-wrap: break-word;
       overflow-wrap: break-word;
@@ -184,31 +173,50 @@
         min-width: unset;
       }
 
+      input, .readonly-label {
+        font-size: 13px;
+      }
+
       table {
-        font-size: 12px;
+        font-size: 11px;
         min-width: unset;
       }
     }
 
     @media print {
-      body {
-        background-color: white;
-        margin: 0;
-        padding: 0;
-      }
-
+      .khmer-back-wrapper,
       .form-section,
-      .actions,
-      .khmer-back-wrapper {
+      .actions {
         display: none !important;
       }
 
       table {
-        width: 100%;
-        font-size: 12px;
+        font-size: 11px;
       }
     }
   </style>
+
+  <script>
+    const user = sessionStorage.getItem("loggedInUser");
+    if (!user) {
+      window.location.href = "https://measvuthy168.github.io/CreditAssist/login.html";
+    }
+
+    const AUTO_LOGOUT_MINUTES = 1;
+    let logoutTimer;
+    function resetLogoutTimer() {
+      clearTimeout(logoutTimer);
+      logoutTimer = setTimeout(() => {
+        sessionStorage.removeItem("loggedInUser");
+        alert("Session expired due to inactivity. Please log in again.");
+        window.location.href = "https://measvuthy168.github.io/CreditAssist/login.html";
+      }, AUTO_LOGOUT_MINUTES * 60 * 1000);
+    }
+    window.onload = resetLogoutTimer;
+    document.onmousemove = resetLogoutTimer;
+    document.onkeydown = resetLogoutTimer;
+    document.onclick = resetLogoutTimer;
+  </script>
 </head>
 <body>
   <div class="khmer-back-wrapper">
@@ -216,6 +224,7 @@
       ⬅ ត្រឡប់ទៅទំព័រដើម
     </button>
   </div>
+  <div class="spacer"></div>
 
   <div class="header">
     <h2>YEARLY AVERAGE OF DEBIT TURNOVER</h2>
@@ -233,7 +242,7 @@
     </div>
     <div class="full">
       <label for="customer-name">Customer Name</label>
-      <input type="text" id="customer-name" disabled />
+      <span class="readonly-label" id="customer-name-label">-</span>
     </div>
   </div>
 
@@ -247,11 +256,11 @@
     <table id="turnover-table">
       <thead>
         <tr>
-          <th style="width: 20%;">MONTH</th>
-          <th style="width: 20%;">AMT_IN</th>
-          <th style="width: 20%;">CURRENT_OD</th>
-          <th style="width: 20%;">TURNOVER RATE</th>
-          <th style="width: 20%;">Effective Date</th>
+          <th>MONTH</th>
+          <th>AMT_IN</th>
+          <th>CURRENT_OD</th>
+          <th>TURNOVER RATE</th>
+          <th>Effective Date</th>
         </tr>
       </thead>
       <tbody id="data-body"></tbody>
@@ -271,8 +280,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <script>
-    let monthList = [];
     let combinedData = [];
+    let monthList = [];
 
     function getLast12MonthEnds(baseDate) {
       const months = [];
@@ -294,13 +303,7 @@
       tbody.innerHTML = '';
       months.forEach(month => {
         const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${month}</td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-        `;
+        row.innerHTML = `<td>${month}</td><td></td><td></td><td></td><td></td>`;
         tbody.appendChild(row);
       });
     }
@@ -341,8 +344,8 @@
         }
       });
 
-      const latestEffStr = latestEff ? formatDate(`${latestEff.getDate()}-${latestEff.getMonth()+1}-${latestEff.getFullYear()}`) : null;
-      const oldestEffStr = oldestEff ? formatDate(`${oldestEff.getDate()}-${oldestEff.getMonth()+1}-${oldestEff.getFullYear()}`) : null;
+      const latestEffStr = latestEff ? formatDate(`${latestEff.getDate()}-${latestEff.getMonth() + 1}-${latestEff.getFullYear()}`) : null;
+      const oldestEffStr = oldestEff ? formatDate(`${oldestEff.getDate()}-${oldestEff.getMonth() + 1}-${oldestEff.getFullYear()}`) : null;
 
       [...tbody.rows].forEach(row => {
         const month = formatDate(row.cells[0].innerText);
@@ -382,7 +385,7 @@
         monthList = getLast12MonthEnds(selectedDate);
         updateTableWithEmptyMonths(monthList);
         document.getElementById('input-cif').value = '';
-        document.getElementById('customer-name').value = '';
+        document.getElementById('customer-name-label').textContent = '-';
         await loadAllData();
       }
     });
@@ -392,7 +395,7 @@
       if (!cif) return;
       if (!combinedData.length) await loadAllData();
       const found = combinedData.find(d => d.CUSTOMER === cif);
-      document.getElementById('customer-name').value = found ? found["Name(Eng)"] : 'Not Found';
+      document.getElementById('customer-name-label').textContent = found ? found["Name(Eng)"] : 'Not Found';
       await fetchAndFillData(cif);
     });
 
@@ -407,10 +410,8 @@
     function exportToPDF() {
       const backBtn = document.querySelector(".khmer-back-wrapper");
       const actionSection = document.querySelector(".actions");
-
       if (backBtn) backBtn.style.display = "none";
       if (actionSection) actionSection.style.display = "none";
-
       const element = document.body;
       const opt = {
         margin: 0.5,
@@ -419,7 +420,6 @@
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
-
       html2pdf().from(element).set(opt).save().then(() => {
         if (backBtn) backBtn.style.display = "block";
         if (actionSection) actionSection.style.display = "block";
