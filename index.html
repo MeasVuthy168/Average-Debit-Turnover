@@ -8,6 +8,7 @@
   <meta http-equiv="Expires" content="0" />
   <title>Yearly Average of Debit Turnover</title>
 
+  <!-- Font integration -->
   <style>
     @font-face {
       font-family: 'Krasar';
@@ -19,24 +20,25 @@
     body {
       font-family: 'Krasar', Arial, sans-serif;
       background-color: #f7fafd;
-      margin: 0;
-      padding: 20px;
+      margin: 20px;
+    }
+
+    .khmer-back-wrapper {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
     }
 
     .khmer-back-button {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
       background-color: #007bff;
-      color: white;
-      padding: 12px;
       border: none;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 6px;
       font-size: 16px;
-      font-family: 'Krasar', Arial, sans-serif;
       cursor: pointer;
-      z-index: 1000;
-      text-align: center;
+      font-family: 'Krasar', Arial, sans-serif;
     }
 
     .khmer-back-button:hover {
@@ -48,52 +50,48 @@
       justify-content: space-between;
       align-items: center;
       margin-top: 60px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
 
     .header h2 {
       margin: 0;
     }
 
-    .header img {
-      height: 60px;
-    }
-
     .form-section {
+      max-width: 1000px;
+      margin: auto;
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       margin-bottom: 20px;
     }
 
     .form-section .half {
-      flex: 1 1 calc(50% - 10px);
-      min-width: 220px;
-    }
-
-    .form-section .full {
-      flex: 1 1 100%;
+      flex: 1 1 48%;
+      min-width: 240px;
     }
 
     .form-section label {
       font-weight: bold;
-      margin-bottom: 4px;
       display: block;
+      margin-bottom: 4px;
     }
 
-    .form-section input {
-      padding: 6px;
+    .form-section input[type="date"],
+    .form-section input[type="text"] {
       width: 100%;
+      padding: 8px;
       border: 1px solid #ccc;
       border-radius: 4px;
       font-size: 14px;
     }
 
-    #customer-name-display {
-      font-size: 16px;
-      font-weight: bold;
-      margin-top: 8px;
-      display: block;
+    .readonly-label {
+      padding: 8px;
+      background-color: #e9ecef;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
     }
 
     .actions {
@@ -117,13 +115,13 @@
     }
 
     .table-container {
-      width: 100%;
+      max-width: 1000px;
+      margin: auto;
       overflow-x: auto;
     }
 
     table {
       width: 100%;
-      min-width: 600px;
       border-collapse: collapse;
       background-color: white;
       font-size: 12px;
@@ -134,9 +132,7 @@
       border: 1px solid #ccc;
       padding: 6px;
       text-align: center;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      white-space: normal;
+      word-break: break-word;
     }
 
     th {
@@ -164,31 +160,26 @@
     @media (max-width: 600px) {
       .form-section {
         flex-direction: column;
-        gap: 10px;
       }
 
-      .form-section .half,
-      .form-section .full {
+      .form-section .half {
         width: 100%;
-        min-width: unset;
       }
 
       table {
         font-size: 11px;
-        min-width: unset;
       }
     }
 
     @media print {
-      .khmer-back-button,
+      .khmer-back-wrapper,
       .form-section,
       .actions {
         display: none !important;
       }
 
       table {
-        width: 100%;
-        font-size: 10px;
+        font-size: 11px;
       }
     }
   </style>
@@ -201,7 +192,6 @@
 
     const AUTO_LOGOUT_MINUTES = 1;
     let logoutTimer;
-
     function resetLogoutTimer() {
       clearTimeout(logoutTimer);
       logoutTimer = setTimeout(() => {
@@ -210,7 +200,6 @@
         window.location.href = "https://measvuthy168.github.io/CreditAssist/login.html";
       }, AUTO_LOGOUT_MINUTES * 60 * 1000);
     }
-
     window.onload = resetLogoutTimer;
     document.onmousemove = resetLogoutTimer;
     document.onkeydown = resetLogoutTimer;
@@ -218,9 +207,12 @@
   </script>
 </head>
 <body>
-  <button class="khmer-back-button" onclick="window.location.href='https://measvuthy168.github.io/CreditAssist/'">
-    ⬅ ត្រឡប់ទៅទំព័រដើម
-  </button>
+
+  <div class="khmer-back-wrapper">
+    <button class="khmer-back-button" onclick="window.location.href='https://measvuthy168.github.io/CreditAssist/'">
+      ⬅ ត្រឡប់ទៅទំព័រដើម
+    </button>
+  </div>
 
   <div class="header">
     <h2>YEARLY AVERAGE OF DEBIT TURNOVER</h2>
@@ -238,7 +230,7 @@
     </div>
     <div class="full">
       <label for="customer-name">Customer Name</label>
-      <span id="customer-name-display">-</span>
+      <div id="customer-name-label" class="readonly-label">-</div>
     </div>
   </div>
 
@@ -381,7 +373,7 @@
         monthList = getLast12MonthEnds(selectedDate);
         updateTableWithEmptyMonths(monthList);
         document.getElementById('input-cif').value = '';
-        document.getElementById('customer-name-display').textContent = '-';
+        document.getElementById('customer-name-label').innerText = '-';
         await loadAllData();
       }
     });
@@ -391,7 +383,7 @@
       if (!cif) return;
       if (!combinedData.length) await loadAllData();
       const found = combinedData.find(d => d.CUSTOMER === cif);
-      document.getElementById('customer-name-display').textContent = found ? found["Name(Eng)"] : 'Not Found';
+      document.getElementById('customer-name-label').innerText = found ? found["Name(Eng)"] : 'Not Found';
       await fetchAndFillData(cif);
     });
 
@@ -404,7 +396,7 @@
     }
 
     function exportToPDF() {
-      const backBtn = document.querySelector(".khmer-back-button");
+      const backBtn = document.querySelector(".khmer-back-wrapper");
       const actionSection = document.querySelector(".actions");
 
       if (backBtn) backBtn.style.display = "none";
