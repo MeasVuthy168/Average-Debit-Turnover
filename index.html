@@ -8,7 +8,6 @@
   <meta http-equiv="Expires" content="0" />
   <title>Yearly Average of Debit Turnover</title>
 
-  <!-- Font integration -->
   <style>
     @font-face {
       font-family: 'Krasar';
@@ -23,22 +22,18 @@
       margin: 20px;
     }
 
-    .khmer-back-wrapper {
+    .khmer-back-button {
       position: fixed;
       top: 10px;
       left: 10px;
-      z-index: 1000;
-    }
-
-    .khmer-back-button {
       background-color: #007bff;
-      border: none;
       color: white;
       padding: 10px 16px;
-      border-radius: 6px;
+      border: none;
       font-size: 16px;
+      border-radius: 8px;
       cursor: pointer;
-      font-family: 'Krasar', Arial, sans-serif;
+      z-index: 1000;
     }
 
     .khmer-back-button:hover {
@@ -49,49 +44,52 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 60px;
       margin-bottom: 10px;
+      margin-top: 60px;
     }
 
     .header h2 {
       margin: 0;
     }
 
+    .header img {
+      height: 60px;
+    }
+
     .form-section {
-      max-width: 1000px;
-      margin: auto;
       display: flex;
+      justify-content: center;
+      gap: 10px;
+      max-width: 1000px;
+      margin: 0 auto 20px auto;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 20px;
     }
 
     .form-section .half {
-      flex: 1 1 48%;
-      min-width: 240px;
+      width: 20%;
+      min-width: 120px;
     }
 
     .form-section label {
       font-weight: bold;
-      display: block;
       margin-bottom: 4px;
+      display: block;
     }
 
-    .form-section input[type="date"],
-    .form-section input[type="text"] {
+    .form-section input {
+      padding: 6px;
       width: 100%;
-      padding: 8px;
       border: 1px solid #ccc;
       border-radius: 4px;
       font-size: 14px;
     }
 
-    .readonly-label {
-      padding: 8px;
-      background-color: #e9ecef;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 14px;
+    #customer-name {
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 10px auto;
+      color: #333;
     }
 
     .actions {
@@ -107,7 +105,6 @@
       background-color: #007bff;
       color: white;
       cursor: pointer;
-      font-family: 'Krasar', Arial, sans-serif;
     }
 
     .actions button:hover {
@@ -115,13 +112,13 @@
     }
 
     .table-container {
-      max-width: 1000px;
-      margin: auto;
+      width: 100%;
       overflow-x: auto;
     }
 
     table {
       width: 100%;
+      min-width: 600px;
       border-collapse: collapse;
       background-color: white;
       font-size: 12px;
@@ -132,7 +129,7 @@
       border: 1px solid #ccc;
       padding: 6px;
       text-align: center;
-      word-break: break-word;
+      word-wrap: break-word;
     }
 
     th {
@@ -157,29 +154,15 @@
       font-weight: bold;
     }
 
-    @media (max-width: 600px) {
-      .form-section {
-        flex-direction: column;
-      }
-
-      .form-section .half {
-        width: 100%;
-      }
-
-      table {
-        font-size: 11px;
-      }
-    }
-
     @media print {
-      .khmer-back-wrapper,
-      .form-section,
-      .actions {
+      .khmer-back-button,
+      .actions,
+      .form-section {
         display: none !important;
       }
 
       table {
-        font-size: 11px;
+        font-size: 10px;
       }
     }
   </style>
@@ -192,6 +175,7 @@
 
     const AUTO_LOGOUT_MINUTES = 1;
     let logoutTimer;
+
     function resetLogoutTimer() {
       clearTimeout(logoutTimer);
       logoutTimer = setTimeout(() => {
@@ -200,6 +184,7 @@
         window.location.href = "https://measvuthy168.github.io/CreditAssist/login.html";
       }, AUTO_LOGOUT_MINUTES * 60 * 1000);
     }
+
     window.onload = resetLogoutTimer;
     document.onmousemove = resetLogoutTimer;
     document.onkeydown = resetLogoutTimer;
@@ -207,12 +192,9 @@
   </script>
 </head>
 <body>
-
-  <div class="khmer-back-wrapper">
-    <button class="khmer-back-button" onclick="window.location.href='https://measvuthy168.github.io/CreditAssist/'">
-      ⬅ ត្រឡប់ទៅទំព័រដើម
-    </button>
-  </div>
+  <button class="khmer-back-button" onclick="window.location.href='https://measvuthy168.github.io/CreditAssist/'">
+    ⬅ ត្រឡប់ទៅទំព័រដើម
+  </button>
 
   <div class="header">
     <h2>YEARLY AVERAGE OF DEBIT TURNOVER</h2>
@@ -228,11 +210,9 @@
       <label for="input-cif">Input CIF</label>
       <input type="text" id="input-cif" />
     </div>
-    <div class="full">
-      <label for="customer-name">Customer Name</label>
-      <div id="customer-name-label" class="readonly-label">-</div>
-    </div>
   </div>
+
+  <div id="customer-name">Customer Name: </div>
 
   <div class="actions">
     <button onclick="printPage()">Print</button>
@@ -332,8 +312,8 @@
         }
       });
 
-      const latestEffStr = latestEff ? formatDate(`${latestEff.getDate()}-${latestEff.getMonth()+1}-${latestEff.getFullYear()}`) : null;
-      const oldestEffStr = oldestEff ? formatDate(`${oldestEff.getDate()}-${oldestEff.getMonth()+1}-${oldestEff.getFullYear()}`) : null;
+      const latestEffStr = latestEff ? formatDate(`${latestEff.getDate()}-${latestEff.getMonth() + 1}-${latestEff.getFullYear()}`) : null;
+      const oldestEffStr = oldestEff ? formatDate(`${oldestEff.getDate()}-${oldestEff.getMonth() + 1}-${oldestEff.getFullYear()}`) : null;
 
       [...tbody.rows].forEach(row => {
         const month = formatDate(row.cells[0].innerText);
@@ -373,7 +353,7 @@
         monthList = getLast12MonthEnds(selectedDate);
         updateTableWithEmptyMonths(monthList);
         document.getElementById('input-cif').value = '';
-        document.getElementById('customer-name-label').innerText = '-';
+        document.getElementById('customer-name').textContent = 'Customer Name: ';
         await loadAllData();
       }
     });
@@ -383,7 +363,7 @@
       if (!cif) return;
       if (!combinedData.length) await loadAllData();
       const found = combinedData.find(d => d.CUSTOMER === cif);
-      document.getElementById('customer-name-label').innerText = found ? found["Name(Eng)"] : 'Not Found';
+      document.getElementById('customer-name').textContent = 'Customer Name: ' + (found ? found["Name(Eng)"] : 'Not Found');
       await fetchAndFillData(cif);
     });
 
@@ -396,22 +376,18 @@
     }
 
     function exportToPDF() {
-      const backBtn = document.querySelector(".khmer-back-wrapper");
+      const backBtn = document.querySelector(".khmer-back-button");
       const actionSection = document.querySelector(".actions");
-
       if (backBtn) backBtn.style.display = "none";
       if (actionSection) actionSection.style.display = "none";
 
-      const element = document.body;
-      const opt = {
+      html2pdf().set({
         margin: 0.5,
-        filename: 'Turnover_Average.pdf',
+        filename: "Turnover_Average.pdf",
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-      };
-
-      html2pdf().from(element).set(opt).save().then(() => {
+      }).from(document.body).save().then(() => {
         if (backBtn) backBtn.style.display = "block";
         if (actionSection) actionSection.style.display = "block";
       });
