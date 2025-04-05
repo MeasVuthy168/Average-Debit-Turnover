@@ -8,39 +8,40 @@
   <meta http-equiv="Expires" content="0" />
   <title>Yearly Average of Debit Turnover</title>
 
+  <!-- Load Krasar Font -->
   <style>
+    @font-face {
+      font-family: 'Krasar';
+      src: url('https://measvuthy168.github.io/CreditAssist/Krasar-Regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Krasar';
+      src: url('https://measvuthy168.github.io/CreditAssist/Krasar-Bold.ttf') format('truetype');
+      font-weight: bold;
+      font-style: normal;
+    }
+
     body {
       font-family: Arial, sans-serif;
       background-color: #f7fafd;
       margin: 20px;
     }
 
-    .khmer-back-wrapper {
+    .back-button {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background-color: #007bff;
-      padding: 10px;
-      text-align: center;
-      z-index: 1000;
-    }
-
-    .khmer-back-button {
-      background: none;
-      border: none;
+      top: 10px;
+      left: 10px;
+      background-color: #2a8bf2;
       color: white;
-      font-size: 16px;
-      font-family: 'Khmer OS System', Arial, sans-serif;
+      border: none;
+      padding: 10px 14px;
+      font-size: 14px;
+      border-radius: 5px;
       cursor: pointer;
-    }
-
-    .khmer-back-button:hover {
-      text-decoration: underline;
-    }
-
-    .spacer {
-      height: 60px;
+      z-index: 1000;
+      font-family: 'Krasar', Arial, sans-serif;
     }
 
     .header {
@@ -48,6 +49,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
+      margin-top: 60px;
     }
 
     .header h2 {
@@ -184,7 +186,7 @@
     }
 
     @media print {
-      .khmer-back-wrapper,
+      .back-button,
       .form-section,
       .actions {
         display: none !important;
@@ -219,12 +221,10 @@
   </script>
 </head>
 <body>
-  <div class="khmer-back-wrapper">
-    <button class="khmer-back-button" onclick="window.location.href='https://measvuthy168.github.io/CreditAssist/'">
-      ⬅ ត្រឡប់ទៅទំព័រដើម
-    </button>
-  </div>
-  <div class="spacer"></div>
+  <!-- Updated Back Button -->
+  <button class="back-button" onclick="window.location.href='https://measvuthy168.github.io/CreditAssist/'">
+    ⬅ ត្រឡប់ទៅទំព័រដើម
+  </button>
 
   <div class="header">
     <h2>YEARLY AVERAGE OF DEBIT TURNOVER</h2>
@@ -408,7 +408,7 @@
     }
 
     function exportToPDF() {
-      const backBtn = document.querySelector(".khmer-back-wrapper");
+      const backBtn = document.querySelector(".back-button");
       const actionSection = document.querySelector(".actions");
       if (backBtn) backBtn.style.display = "none";
       if (actionSection) actionSection.style.display = "none";
