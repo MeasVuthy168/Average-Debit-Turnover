@@ -1,0 +1,118 @@
+
+<script>
+  let combinedData = [];
+  let monthList = [];
+
+  function getLast12MonthEnds(baseDate) {
+    const months = [];
+    const date = new Date(baseDate);
+    date.setDate(1);
+    for (let i = 0; i < 12; i++) {
+      date.setMonth(date.getMonth() - 1);
+      const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+      const dd = String(endOfMonth.getDate()).padStart(2, '0');
+      const mm = String(endOfMonth.getMonth() + 1).padStart(2, '0');
+      const yy = String(endOfMonth.getFullYear()).slice(-2);
+      months.push(`${dd}-${mm}-${yy}`);
+    }
+    return months;
+  }
+
+  function updateTableWithEmptyMonths(months) {
+    const tbody = document.getElementById('data-body');
+    tbody.innerHTML = '';
+    months.forEach(month => {
+      const row = document.createElement('tr');
+      row.innerHTML = `<td>${month}</td><td></td><td></td><td></td><td></td>`;
+      tbody.appendChild(row);
+    });
+  }
+
+  async function loadAllData() {
+    combinedData = [];
+    try {
+      const response = await fetch("https://secure-backend-tzj9.onrender.com/api/turnover");
+      const data = await response.json();
+      combinedData = Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error(`Failed to fetch turnover data from API:`, error);
+    }
+  }
+
+  function formatDate(dateStr) {
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    let [dd, mm, yy] = parts;
+    if (yy.length === 4) yy = yy.slice(-2);
+    return `${dd.padStart(2, '0')}-${mm.padStart(2, '0')}-${yy}`;
+  }
+
+  async function fetchAndFillData(cif) {
+    let totalAmtIn = 0, totalOd = 0, totalRate = 0, count = 0;
+    const tbody = document.getElementById('data-body');
+    let latestEff = null, oldestEff = null;
+
+    combinedData.forEach(d => {
+      if (d.CUSTOMER === cif && d.Effective_Date) {
+        const dParts = d.Effective_Date.split('-');
+        const formatted = new Date(`${dParts[2].length === 2 ? '20' + dParts[2] : dParts[2]}-${dParts[1]}-${dParts[0]}`);
+        if (!latestEff || formatted > latestEff) latestEff = formatted;
+        if (!oldestEff || formatted < oldestEff) oldestEff = formatted;
+      }
+    });
+
+    const latestEffStr = latestEff ? formatDate(`${latestEff.getDate()}-${latestEff.getMonth() + 1}-${latestEff.getFullYear()}`) : null;
+    const oldestEffStr = oldestEff ? formatDate(`${oldestEff.getDate()}-${oldestEff.getMonth() + 1}-${oldestEff.getFullYear()}`) : null;
+
+    [...tbody.rows].forEach(row => {
+      const month = formatDate(row.cells[0].innerText);
+      const match = combinedData.find(d => d.CUSTOMER === cif && formatDate(d.MONTH) === month);
+
+      if (match) {
+        row.cells[1].innerText = parseFloat(match.AMT_IN).toLocaleString();
+        row.cells[2].innerText = parseFloat(match.CURRENT_OD).toLocaleString();
+        row.cells[3].innerText = match.TURNOVER_RATE + '%';
+        row.cells[4].innerText = match.Effective_Date;
+
+        totalAmtIn += parseFloat(match.AMT_IN);
+        totalOd += parseFloat(match.CURRENT_OD);
+
+        if (formatDate(match.Effective_Date) === latestEffStr) {
+          totalRate += parseFloat(match.TURNOVER_RATE);
+          count++;
+          row.classList.add('newest');
+        }
+        if (formatDate(match.Effective_Date) === oldestEffStr) {
+          row.classList.add('oldest');
+        }
+      } else {
+        row.classList.add("not-found");
+        row.cells[1].innerText = row.cells[2].innerText = row.cells[3].innerText = row.cells[4].innerText = 'No Data';
+      }
+    });
+
+    document.getElementById('avg-amt-in').innerText = totalAmtIn.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    document.getElementById('avg-current-od').innerText = totalOd.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    document.getElementById('avg-turnover-rate').innerText = count > 0 ? (totalRate / count).toFixed(2) + '%' : '';
+  }
+
+  document.getElementById('prepared-date').addEventListener('change', async (e) => {
+    const selectedDate = e.target.value;
+    if (selectedDate) {
+      monthList = getLast12MonthEnds(selectedDate);
+      updateTableWithEmptyMonths(monthList);
+      document.getElementById('input-cif').value = '';
+      document.getElementById('customer-name-label').textContent = '-';
+      await loadAllData();
+    }
+  });
+
+  document.getElementById('input-cif').addEventListener('change', async (e) => {
+    const cif = e.target.value.trim();
+    if (!cif) return;
+    if (!combinedData.length) await loadAllData();
+    const found = combinedData.find(d => d.CUSTOMER === cif);
+    document.getElementById('customer-name-label').textContent = found ? found["Name(Eng)"] : 'Not Found';
+    await fetchAndFillData(cif);
+  });
+</script>
