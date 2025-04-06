@@ -313,19 +313,16 @@
         tbody.appendChild(row);
       });
     }
-
     async function loadAllData() {
-      combinedData = [];
-      const files = ['data_tov1.json', 'data_tov2.json'];
-      for (const file of files) {
-        try {
-          const response = await fetch(file);
-          const data = await response.json();
-          combinedData = combinedData.concat(data);
-        } catch (error) {
-          console.error(`Failed to load ${file}:`, error);
-        }
+     try {
+    const response = await fetch("https://secure-backend-tzj9.onrender.com/api/turnover");
+    const data = await response.json();
+    combinedData = Array.isArray(data) ? data : [];
+     } catch (error) {
+    console.error("Failed to load turnover data from backend:", error);
+    alert("មានបញ្ហាក្នុងការទាញយកទិន្នន័យពីម៉ាស៊ីនមេ។");
       }
+     }
     }
 
     function formatDate(dateStr) {
